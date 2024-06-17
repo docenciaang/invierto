@@ -1,0 +1,13 @@
+<div class="d-flex flex-wrap mb-4">
+    <h1 class="flex-grow-1" i18n="@@cuenta.add.headline">Add Cuenta</h1>
+    <div>
+        <a routerLink="/cuentas" class="btn btn-secondary" i18n="@@cuenta.add.back">Back to list</a>
+    </div>
+</div>
+<form [formGroup]="addForm" (ngSubmit)="handleSubmit()">
+    <app-input-row [group]="addForm" field="numeroCuenta" i18n-label="@@cuenta.numeroCuenta.label" label="Numero Cuenta" />
+    <app-input-row [group]="addForm" field="saldo" i18n-label="@@cuenta.saldo.label" label="Saldo" />
+    <app-input-row [group]="addForm" field="fechaCreacion" datepicker="datepicker" i18n-label="@@cuenta.fechaCreacion.label" label="Fecha Creacion" />
+    <app-input-row [group]="addForm" field="bancoId" rowType="number" i18n-label="@@cuenta.bancoId.label" label="Banco Id" />
+    <input type="submit" i18n-value="@@cuenta.add.headline" value="Add Cuenta" class="btn btn-primary mt-4" />
+</form>

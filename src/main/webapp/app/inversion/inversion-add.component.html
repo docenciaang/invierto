@@ -1,0 +1,18 @@
+<div class="d-flex flex-wrap mb-4">
+    <h1 class="flex-grow-1" i18n="@@inversion.add.headline">Add Inversion</h1>
+    <div>
+        <a routerLink="/inversions" class="btn btn-secondary" i18n="@@inversion.add.back">Back to list</a>
+    </div>
+</div>
+<form [formGroup]="addForm" (ngSubmit)="handleSubmit()">
+    <app-input-row [group]="addForm" field="monto" i18n-label="@@inversion.monto.label" label="Monto" />
+    <app-input-row [group]="addForm" field="fechaInversion" datepicker="datepicker" i18n-label="@@inversion.fechaInversion.label" label="Fecha Inversion" />
+    <app-input-row [group]="addForm" field="fechaVencimiento" datepicker="datepicker" i18n-label="@@inversion.fechaVencimiento.label" label="Fecha Vencimiento" />
+    <app-input-row [group]="addForm" field="tasaInteres" i18n-label="@@inversion.tasaInteres.label" label="Tasa Interes" />
+    <app-input-row [group]="addForm" field="nombreFondo" i18n-label="@@inversion.nombreFondo.label" label="Nombre Fondo" />
+    <app-input-row [group]="addForm" field="valorActual" i18n-label="@@inversion.valorActual.label" label="Valor Actual" />
+    <app-input-row [group]="addForm" field="tipo" rowType="select" [options]="{'DEPOSITO': 'DEPOSITO', 'LETRA_TESORO': 'LETRA_TESORO', 'FONDO_INVERSION': 'FONDO_INVERSION', 'ACCIONES': 'ACCIONES'}" i18n-label="@@inversion.tipo.label" label="Tipo" />
+    <app-input-row [group]="addForm" field="bancoId" rowType="number" i18n-label="@@inversion.bancoId.label" label="Banco Id" />
+    <app-input-row [group]="addForm" field="archivado" rowType="number" i18n-label="@@inversion.archivado.label" label="Archivado" />
+    <input type="submit" i18n-value="@@inversion.add.headline" value="Add Inversion" class="btn btn-primary mt-4" />
+</form>

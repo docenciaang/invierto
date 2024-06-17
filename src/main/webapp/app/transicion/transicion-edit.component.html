@@ -1,0 +1,16 @@
+<div class="d-flex flex-wrap mb-4">
+    <h1 class="flex-grow-1" i18n="@@transicion.edit.headline">Edit Transicion</h1>
+    <div>
+        <a routerLink="/transacciones" class="btn btn-secondary" i18n="@@transicion.edit.back">Back to list</a>
+    </div>
+</div>
+<form [formGroup]="editForm" (ngSubmit)="handleSubmit()">
+    <app-input-row [group]="editForm" field="id" rowType="number" i18n-label="@@transicion.id.label" label="Id" />
+    <app-input-row [group]="editForm" field="monto" i18n-label="@@transicion.monto.label" label="Monto" />
+    <app-input-row [group]="editForm" field="fecha" i18n-label="@@transicion.fecha.label" label="Fecha" />
+    <app-input-row [group]="editForm" field="detalle" i18n-label="@@transicion.detalle.label" label="Detalle" />
+    <app-input-row [group]="editForm" field="origneId" rowType="number" i18n-label="@@transicion.origneId.label" label="Origne Id" />
+    <app-input-row [group]="editForm" field="destinoId" rowType="number" i18n-label="@@transicion.destinoId.label" label="Destino Id" />
+    <app-input-row [group]="editForm" field="tipo" rowType="select" [options]="{'TRASPASO': 'TRASPASO', 'COMPRA': 'COMPRA', 'VENTA': 'VENTA', 'AJUSTE': 'AJUSTE', 'ENTRADA': 'ENTRADA', 'SALIDA': 'SALIDA', 'DIVIDENDO': 'DIVIDENDO', 'INTERESES': 'INTERESES', 'REVALORIZACION': 'REVALORIZACION'}" i18n-label="@@transicion.tipo.label" label="Tipo" />
+    <input type="submit" i18n-value="@@transicion.edit.headline" value="Edit Transicion" class="btn btn-primary mt-4" />
+</form>

@@ -1,0 +1,15 @@
+<div class="d-flex flex-wrap mb-4">
+    <h1 class="flex-grow-1" i18n="@@transicion.add.headline">Add Transicion</h1>
+    <div>
+        <a routerLink="/transacciones" class="btn btn-secondary" i18n="@@transicion.add.back">Back to list</a>
+    </div>
+</div>
+<form [formGroup]="addForm" (ngSubmit)="handleSubmit()">
+    <app-input-row [group]="addForm" field="monto" i18n-label="@@transicion.monto.label" label="Monto" />
+    <app-input-row [group]="addForm" field="fecha" i18n-label="@@transicion.fecha.label" label="Fecha" />
+    <app-input-row [group]="addForm" field="detalle" i18n-label="@@transicion.detalle.label" label="Detalle" />
+    <app-input-row [group]="addForm" field="origneId" rowType="number" i18n-label="@@transicion.origneId.label" label="Origne Id" />
+    <app-input-row [group]="addForm" field="destinoId" rowType="number" i18n-label="@@transicion.destinoId.label" label="Destino Id" />
+    <app-input-row [group]="addForm" field="tipo" rowType="select" [options]="{'TRASPASO': 'TRASPASO', 'COMPRA': 'COMPRA', 'VENTA': 'VENTA', 'AJUSTE': 'AJUSTE', 'ENTRADA': 'ENTRADA', 'SALIDA': 'SALIDA', 'DIVIDENDO': 'DIVIDENDO', 'INTERESES': 'INTERESES', 'REVALORIZACION': 'REVALORIZACION'}" i18n-label="@@transicion.tipo.label" label="Tipo" />
+    <input type="submit" i18n-value="@@transicion.add.headline" value="Add Transicion" class="btn btn-primary mt-4" />
+</form>

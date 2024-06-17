@@ -1,0 +1,41 @@
+<div class="d-flex flex-wrap mb-4">
+    <h1 class="flex-grow-1" i18n="@@cuenta.list.headline">Cuentas</h1>
+    <div>
+        <a routerLink="/cuentas/add" class="btn btn-primary ms-2" i18n="@@cuenta.list.createNew">Create new Cuenta</a>
+    </div>
+</div>
+@if (!cuentas || cuentas.length === 0) {
+<div i18n="@@cuenta.list.empty">No Cuentas could be found.</div>
+} @else {
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th scope="col" i18n="@@cuenta.id.label">Id</th>
+                <th scope="col" i18n="@@cuenta.numeroCuenta.label">Numero Cuenta</th>
+                <th scope="col" i18n="@@cuenta.saldo.label">Saldo</th>
+                <th scope="col" i18n="@@cuenta.fechaCreacion.label">Fecha Creacion</th>
+                <th scope="col" i18n="@@cuenta.bancoId.label">Banco Id</th>
+                <th><!-- --></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (cuenta of cuentas; track cuenta.id) {
+            <tr>
+                <td>{{ cuenta.id }}</td>
+                <td>{{ cuenta.numeroCuenta }}</td>
+                <td>{{ cuenta.saldo }}</td>
+                <td>{{ cuenta.fechaCreacion }}</td>
+                <td>{{ cuenta.bancoId }}</td>
+                <td>
+                    <div class="float-end text-nowrap">
+                        <a [routerLink]="['/cuentas/edit', cuenta.id]" class="btn btn-sm btn-secondary" i18n="@@cuenta.list.edit">Edit</a>
+                        <button type="button" (click)="confirmDelete(cuenta.id!)" class="btn btn-sm btn-secondary" i18n="@@cuenta.list.delete">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
