@@ -1,7 +1,7 @@
 package eu.vikas.invierto.service
 
 import eu.vikas.invierto.domain.Cuenta
-import eu.vikas.invierto.model.CuentaDTO
+import eu.vikas.invierto.model.*
 import eu.vikas.invierto.repos.CuentaRepository
 import eu.vikas.invierto.util.NotFoundException
 import org.springframework.data.domain.Sort
@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class CuentaService(
-    private val cuentaRepository: CuentaRepository
+    private val cuentaRepository: CuentaRepository,
+    private val transaccionService: TransaccionService,
 ) {
 
     fun findAll(): List<CuentaDTO> {
@@ -23,6 +24,46 @@ class CuentaService(
     fun `get`(id: Long): CuentaDTO = cuentaRepository.findById(id)
             .map { cuenta -> mapToDTO(cuenta, CuentaDTO()) }
             .orElseThrow { NotFoundException() }
+
+
+    /**
+     * Devuelva la inversion y sus transacciones ordenas por fecha
+     * Se calcula:
+     *  - saldo
+     *  - monto de la transaccion positivo si es ingreso, negativo si es salida
+     *    si origen y destino iguales , no se cambia el signo
+     */
+    fun detalleCuenta(id: Long) : DetalleCuentaDTO {
+
+
+        val resDTO = this.get(id)
+        val trans: List<TransaccionDTO> = transaccionService.findAllCuenta(id)
+        // calculamos saldo y signo
+        var saldo = resDTO.saldo ?: 0.0
+
+        trans.forEach { t ->
+            var signo =
+            when(t.tipo){
+                TipoTransaccion.TRASPASO -> if ( t.origenId == id ) 1 else -1
+                TipoTransaccion.COMPRA -> -1
+                TipoTransaccion.VENTA -> 1
+                TipoTransaccion.AJUSTE -> 1
+                TipoTransaccion.ENTRADA -> 1
+                TipoTransaccion.SALIDA -> -1
+                TipoTransaccion.DIVIDENDO -> +1
+                TipoTransaccion.INTERESES -> +1
+                TipoTransaccion.REVALORIZACION -> +1
+                null -> 0
+            }
+
+            saldo += signo * ( t.monto ?:0.0)
+            t.saldo = saldo
+
+        }
+        val detalle = DetalleCuentaDTO()
+        return detalle.completarDetalleCuenta(resDTO,trans)
+
+    }
 
     fun create(cuentaDTO: CuentaDTO): Long {
         val cuenta = Cuenta()

@@ -3,6 +3,7 @@ package eu.vikas.invierto.service
 import eu.vikas.invierto.domain.Inversion
 import eu.vikas.invierto.model.DetalleInversionDTO
 import eu.vikas.invierto.model.InversionDTO
+import eu.vikas.invierto.model.TipoTransaccion
 import eu.vikas.invierto.model.TransaccionDTO
 import eu.vikas.invierto.repos.InversionRepository
 import eu.vikas.invierto.util.NotFoundException
@@ -61,12 +62,20 @@ class InversionService(
         var saldo = resDTO.monto ?: 0.0
 
         trans.forEach { t ->
-            var signo = 1
-            if ( t.origneId == id && t.destinoId == id)
-                signo = 1 // puede ser ganancias o perdidas , el signo ya esta en el monto
-            else if ( t.origneId == id)
-                signo = -1
-            // no debeeria haber mas casos
+            var signo =
+                when(t.tipo){
+                    TipoTransaccion.TRASPASO -> if ( t.origenId == id ) 1 else -1
+                    TipoTransaccion.COMPRA -> -1
+                    TipoTransaccion.VENTA -> 1
+                    TipoTransaccion.AJUSTE -> 1
+                    TipoTransaccion.ENTRADA -> 1
+                    TipoTransaccion.SALIDA -> -1
+                    TipoTransaccion.DIVIDENDO -> +1
+                    TipoTransaccion.INTERESES -> +1
+                    TipoTransaccion.REVALORIZACION -> +1
+                    null -> 0
+                }
+
 
             saldo += signo * ( t.monto ?:0.0)
             t.saldo = saldo

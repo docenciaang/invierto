@@ -1,6 +1,8 @@
 package eu.vikas.invierto.rest
 
 import eu.vikas.invierto.model.CuentaDTO
+import eu.vikas.invierto.model.DetalleCuentaDTO
+import eu.vikas.invierto.model.DetalleInversionDTO
 import eu.vikas.invierto.model.RespuestaId
 import eu.vikas.invierto.service.CuentaService
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -36,6 +38,12 @@ class CuentaResource(
     fun getCuenta(@PathVariable(name = "id") id: Long): ResponseEntity<CuentaDTO> =
             ResponseEntity.ok(cuentaService.get(id))
 
+    @GetMapping("/detalle/{id}")
+    fun getDetallesCuenta(@PathVariable(name = "id") id: Long): ResponseEntity<DetalleCuentaDTO>{
+
+        return ResponseEntity.ok( cuentaService.detalleCuenta(id))
+
+    }
     @PostMapping
     @ApiResponse(responseCode = "201")
     fun createCuenta(@RequestBody @Valid cuentaDTO: CuentaDTO): ResponseEntity<RespuestaId> {

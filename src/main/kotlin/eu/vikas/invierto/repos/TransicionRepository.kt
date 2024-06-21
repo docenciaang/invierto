@@ -9,5 +9,8 @@ import org.springframework.data.mongodb.repository.Query
 
 interface TransicionRepository : MongoRepository<Transaccion, Long> {
     @Query("{ '\$or': [ { 'origenId': ?0 }, { 'destinoId': ?0 } ] }")
-    fun findPorInversion(idOrigen: Long, sort: Sort): List<Transaccion>
+    fun findPorInversion(idInversion: Long, sort: Sort): List<Transaccion>
+
+    @Query("{ '\$or': [ { 'origenId': ?0 }, { 'destinoId': ?0 } ] }")
+    fun findPorCuenta(idCuenta: Long, sort: Sort): List<Transaccion>
 }

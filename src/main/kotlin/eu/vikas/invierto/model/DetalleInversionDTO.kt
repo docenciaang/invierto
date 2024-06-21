@@ -23,18 +23,20 @@ class DetalleInversionDTO {
 
     fun completarDetalleInversion(invDTO: InversionDTO, trans: List<TransaccionDTO>): DetalleInversionDTO {
 
-        return DetalleInversionDTO().apply {
-            id = invDTO.id
-            monto = invDTO.monto
-            fechaInversion = invDTO.fechaInversion
-            fechaVencimiento = invDTO.fechaVencimiento
-            tasaInteres = invDTO.tasaInteres
-            nombreFondo = invDTO.nombreFondo
-            valorActual = invDTO.valorActual
-            tipo = invDTO.tipo
-            bancoId = invDTO.bancoId
-            archivado = invDTO.archivado
-            movimientos = trans
-        }
+
+        id = invDTO.id
+        monto = invDTO.monto
+        fechaInversion = invDTO.fechaInversion
+        fechaVencimiento = invDTO.fechaVencimiento
+        tasaInteres = invDTO.tasaInteres
+        nombreFondo = invDTO.nombreFondo
+        valorActual = invDTO.valorActual
+        tipo = invDTO.tipo
+        bancoId = invDTO.bancoId
+        archivado = invDTO.archivado
+        movimientos = trans
+
+
+        return this
     }
 }

@@ -1,21 +1,43 @@
 package eu.vikas.invierto.service
 
 import eu.vikas.invierto.domain.Transaccion
+import eu.vikas.invierto.model.CuentaDTO
+import eu.vikas.invierto.model.InversionDTO
+import eu.vikas.invierto.model.TipoTransaccion
 import eu.vikas.invierto.model.TransaccionDTO
+import eu.vikas.invierto.repos.CuentaRepository
+import eu.vikas.invierto.repos.InversionRepository
 import eu.vikas.invierto.repos.TransicionRepository
 import eu.vikas.invierto.util.NotFoundException
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
  /**
-   * ===============================================
-   *
-   * =================================================
-   **/
+  * ===============================================
+  * Representan movimientos entre cuentas e inversiones.
+  * Origen y destino tienen significados distintos según el tipo de operacion
+  *
+  *  - Traspaso,
+  *  - Compra: orgine  CC, destino Inversion
+  *  - Venta : origen inversion , destino CC
+  *  - Gasto : (comisión, etc)  para una inversion origen la CC donde se carga, destino, la inversion que se anota
+  *     con el gasto.
+  *   - Entrada: cualquier ingreso en CC: origen null, destino CC
+  *   - Salida: cualquier movimiento de salida en CC: origen CC salida null
+  *   - Dividendos y Intereses.  origen: CC donde se pagan, destino: inversion
+  *   - Revalorizacion: origen=destino la inversion
+  *   - Ajuste: origen=destino la inversion o CC
+  *
+  *   Monto : siempre positivo. Dependiendo del tipo se ve como positivo o negatico en origen/destino
+  *
+  * =================================================
+  **/
 
 @Service
 class TransaccionService(
-    private val transicionRepository: TransicionRepository
+     private val transicionRepository: TransicionRepository,
+     private val cuentaRepository: CuentaRepository,
+     private val inversioRepository: InversionRepository,
 ) {
 
      /**
@@ -47,6 +69,14 @@ class TransaccionService(
             .map { transicion -> mapToDTO(transicion, TransaccionDTO()) }
             .toList()
     }
+     fun findAllCuenta(id: Long): List<TransaccionDTO> {
+         val orden = Sort.by(Sort.Order.asc("fechaCreacion"))
+         val transacciones = transicionRepository.findPorCuenta(id, orden)
+         return transacciones.stream()
+             .map { transicion -> mapToDTO(transicion, TransaccionDTO()) }
+             .toList()
+     }
+
       /**
         * ===============================================
         *  Una transaccion por id
@@ -60,14 +90,71 @@ class TransaccionService(
       /**
         * ===============================================
         *  Crea una nueva transaccion
-       *  Comprueba id de origen y destino y tipo de inversion
+       *  Comprueba id de origen y destino y tipo de inversion son compatibles
+       *
+       *  @exception: NotFoundException si no existe el  origen o destino
         * =================================================
         **/
 
     fun create(transaccionDTO: TransaccionDTO): Long {
-        val transicion = Transaccion()
-        mapToEntity(transaccionDTO, transicion)
-        return transicionRepository.save(transicion).id!!
+           var cc_origen : CuentaDTO? = null
+          var inv_origen : InversionDTO? = null
+          var cc_destino : CuentaDTO? = null
+          var inv_destino : InversionDTO? = null
+
+
+
+        if(transaccionDTO.origenId != null ) {
+            if (cuentaRepository.existsById(transaccionDTO.origenId!!))
+               cc_origen = CuentaDTO().apply { id = transaccionDTO.origenId }
+            else if (inversioRepository.existsById(transaccionDTO.origenId!!))
+               inv_origen = InversionDTO().apply { id = transaccionDTO.origenId }
+        }
+
+          if(transaccionDTO.destinoId != null ) {
+              if (cuentaRepository.existsById(transaccionDTO.destinoId!!))
+                  cc_destino = CuentaDTO().apply { id = transaccionDTO.destinoId }
+              else if (inversioRepository.existsById(transaccionDTO.origenId!!))
+                  inv_destino = InversionDTO().apply { id = transaccionDTO.destinoId }
+          }
+
+         // en este punto sabemos origen y destino si son cc o inversion o null
+
+
+
+          val correcto=
+        when(transaccionDTO.tipo){
+            TipoTransaccion.TRASPASO ->{
+                // solo entre cuentas o entre inversiones
+                if (cc_origen != null && (cc_destino != null)){
+                    true
+                } else if (inv_origen != null && inv_destino != null ) {
+                    true
+                } else {
+                    false
+                }
+            }
+            TipoTransaccion.COMPRA -> {
+                // origen debe ser cc, destino inv
+                cc_origen != null && inv_destino != null
+            }
+            TipoTransaccion.VENTA -> inv_origen != null && cc_destino != null
+            TipoTransaccion.AJUSTE -> transaccionDTO.origenId == transaccionDTO.destinoId
+            TipoTransaccion.ENTRADA ->  cc_destino != null
+            TipoTransaccion.SALIDA -> cc_origen != null
+            TipoTransaccion.DIVIDENDO , TipoTransaccion.INTERESES -> cc_origen != null && inv_destino != null
+            TipoTransaccion.REVALORIZACION -> inv_origen?.id == inv_destino?.id
+            null -> false
+        }
+
+         if(correcto){
+             val transaccion = Transaccion()
+             mapToEntity(transaccionDTO, transaccion)
+             return transicionRepository.save(transaccion).id!!
+         } else
+             return 0
+
+
     }
 
       /**
@@ -87,12 +174,18 @@ class TransaccionService(
         transicionRepository.deleteById(id)
     }
 
+      /**
+        * ===============================================
+        *  funciones privadas
+        * =================================================
+        **/
+
     private fun mapToDTO(transicion: Transaccion, transaccionDTO: TransaccionDTO): TransaccionDTO {
         transaccionDTO.id = transicion.id
         transaccionDTO.monto = transicion.monto
         transaccionDTO.fecha = transicion.fecha
         transaccionDTO.detalle = transicion.detalle
-        transaccionDTO.origneId = transicion.origneId
+        transaccionDTO.origenId = transicion.origneId
         transaccionDTO.destinoId = transicion.destinoId
         transaccionDTO.tipo = transicion.tipo
         return transaccionDTO
@@ -102,10 +195,12 @@ class TransaccionService(
         transicion.monto = transaccionDTO.monto
         transicion.fecha = transaccionDTO.fecha
         transicion.detalle = transaccionDTO.detalle
-        transicion.origneId = transaccionDTO.origneId
+        transicion.origneId = transaccionDTO.origenId
         transicion.destinoId = transaccionDTO.destinoId
         transicion.tipo = transaccionDTO.tipo
         return transicion
     }
 
-}
+
+
+ }
