@@ -61,6 +61,7 @@ class InversionService(
         // calculamos saldo y signo
         var saldo = resDTO.monto ?: 0.0
 
+
         trans.forEach { t ->
             var signo =
                 when(t.tipo){
@@ -82,6 +83,7 @@ class InversionService(
 
         }
         val detalle = DetalleInversionDTO()
+        detalle.monto = saldo
         return detalle.completarDetalleInversion(resDTO,trans)
 
     }

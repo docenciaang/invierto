@@ -21,7 +21,7 @@ class DetalleCuentaDTO {
 
     fun completarDetalleCuenta(ccDTO: CuentaDTO, trans: List<TransaccionDTO>): DetalleCuentaDTO {
             id = ccDTO.id
-            saldo = ccDTO.saldo
+        //    saldo = ccDTO.saldo
             bancoId = ccDTO.bancoId
             numeroCuenta = ccDTO.numeroCuenta
             fechaCreacion = ccDTO.fechaCreacion

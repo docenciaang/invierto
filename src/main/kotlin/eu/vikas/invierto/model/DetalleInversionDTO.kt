@@ -25,7 +25,7 @@ class DetalleInversionDTO {
 
 
         id = invDTO.id
-        monto = invDTO.monto
+       // se calacula en inversionservice monto = invDTO.monto
         fechaInversion = invDTO.fechaInversion
         fechaVencimiento = invDTO.fechaVencimiento
         tasaInteres = invDTO.tasaInteres

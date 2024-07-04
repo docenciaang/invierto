@@ -1,6 +1,7 @@
 package eu.vikas.invierto.service
 
 import eu.vikas.invierto.domain.Cuenta
+import eu.vikas.invierto.domain.Transaccion
 import eu.vikas.invierto.model.*
 import eu.vikas.invierto.repos.CuentaRepository
 import eu.vikas.invierto.util.NotFoundException
@@ -17,7 +18,13 @@ class CuentaService(
     fun findAll(): List<CuentaDTO> {
         val cuentas = cuentaRepository.findAll(Sort.by("id"))
         return cuentas.stream()
-                .map { cuenta -> mapToDTO(cuenta, CuentaDTO()) }
+                .map { cuenta ->
+                    var cdto = CuentaDTO()
+                    if(cuenta.id != null)
+                         cdto.saldo = detalleCuenta(cuenta.id!!).saldo
+
+                    mapToDTO(cuenta, cdto)
+                }
                 .toList()
     }
 
@@ -44,23 +51,26 @@ class CuentaService(
         trans.forEach { t ->
             var signo =
             when(t.tipo){
-                TipoTransaccion.TRASPASO -> if ( t.origenId == id ) 1 else -1
+                TipoTransaccion.TRASPASO -> if ( t.origenId == id ) -1 else 1
                 TipoTransaccion.COMPRA -> -1
-                TipoTransaccion.VENTA -> 1
+                TipoTransaccion.VENTA -> 1  // la inversion se ingresa en cuenta
                 TipoTransaccion.AJUSTE -> 1
-                TipoTransaccion.ENTRADA -> 1
-                TipoTransaccion.SALIDA -> -1
+                TipoTransaccion.ENTRADA -> 1  // aumenta saldo
+                TipoTransaccion.SALIDA -> -1  // gastos de salida
                 TipoTransaccion.DIVIDENDO -> +1
                 TipoTransaccion.INTERESES -> +1
-                TipoTransaccion.REVALORIZACION -> +1
+                TipoTransaccion.REVALORIZACION -> 0  // no afecta a la cuenta
                 null -> 0
             }
 
-            saldo += signo * ( t.monto ?:0.0)
+            // se adapta el signo para la cuenta origen o destino
+            t.monto = signo * ( t.monto ?:0.0)
+            saldo += t.monto!!
             t.saldo = saldo
 
         }
         val detalle = DetalleCuentaDTO()
+        detalle.saldo = saldo
         return detalle.completarDetalleCuenta(resDTO,trans)
 
     }
@@ -85,7 +95,7 @@ class CuentaService(
     private fun mapToDTO(cuenta: Cuenta, cuentaDTO: CuentaDTO): CuentaDTO {
         cuentaDTO.id = cuenta.id
         cuentaDTO.numeroCuenta = cuenta.numeroCuenta
-        cuentaDTO.saldo = cuenta.saldo
+      //  cuentaDTO.saldo = cuenta.saldo
         cuentaDTO.fechaCreacion = cuenta.fechaCreacion
         cuentaDTO.bancoId = cuenta.bancoId
         return cuentaDTO
@@ -98,5 +108,6 @@ class CuentaService(
         cuenta.bancoId = cuentaDTO.bancoId
         return cuenta
     }
+
 
 }

@@ -20,7 +20,7 @@ class Transaccion {
     @Size(max = 255)
     var detalle: String? = null
 
-    var origneId: Long? = null
+    var origenId: Long? = null
 
     var destinoId: Long? = null
 

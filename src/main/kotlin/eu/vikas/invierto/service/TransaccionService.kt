@@ -55,7 +55,7 @@ class TransaccionService(
 
       /**
         * ===============================================
-        *  Transacciones de una inversion
+        *  Transacciones de una inversion, ordenadas por fecha
        *
        *  Utilizada por inversionService
        *
@@ -114,7 +114,7 @@ class TransaccionService(
           if(transaccionDTO.destinoId != null ) {
               if (cuentaRepository.existsById(transaccionDTO.destinoId!!))
                   cc_destino = CuentaDTO().apply { id = transaccionDTO.destinoId }
-              else if (inversioRepository.existsById(transaccionDTO.origenId!!))
+              else if (inversioRepository.existsById(transaccionDTO.destinoId!!))
                   inv_destino = InversionDTO().apply { id = transaccionDTO.destinoId }
           }
 
@@ -122,7 +122,7 @@ class TransaccionService(
 
 
 
-          val correcto=
+
         when(transaccionDTO.tipo){
             TipoTransaccion.TRASPASO ->{
                 // solo entre cuentas o entre inversiones
@@ -131,28 +131,30 @@ class TransaccionService(
                 } else if (inv_origen != null && inv_destino != null ) {
                     true
                 } else {
-                    false
+                    throw ( NotFoundException("traspaso entre cuentas"))
                 }
             }
             TipoTransaccion.COMPRA -> {
                 // origen debe ser cc, destino inv
-                cc_origen != null && inv_destino != null
+               if( cc_origen == null || inv_destino == null)
+                   throw ( NotFoundException("Compra erro cc origen o inv destino"))
             }
             TipoTransaccion.VENTA -> inv_origen != null && cc_destino != null
             TipoTransaccion.AJUSTE -> transaccionDTO.origenId == transaccionDTO.destinoId
             TipoTransaccion.ENTRADA ->  cc_destino != null
             TipoTransaccion.SALIDA -> cc_origen != null
             TipoTransaccion.DIVIDENDO , TipoTransaccion.INTERESES -> cc_origen != null && inv_destino != null
-            TipoTransaccion.REVALORIZACION -> inv_origen?.id == inv_destino?.id
+            TipoTransaccion.REVALORIZACION ->{
+                if( inv_origen != inv_destino)
+                    throw ( NotFoundException("dividendo, origen dist destino"))
+            }
             null -> false
         }
 
-         if(correcto){
+
              val transaccion = Transaccion()
              mapToEntity(transaccionDTO, transaccion)
              return transicionRepository.save(transaccion).id!!
-         } else
-             return 0
 
 
     }
@@ -185,7 +187,7 @@ class TransaccionService(
         transaccionDTO.monto = transicion.monto
         transaccionDTO.fecha = transicion.fecha
         transaccionDTO.detalle = transicion.detalle
-        transaccionDTO.origenId = transicion.origneId
+        transaccionDTO.origenId = transicion.origenId
         transaccionDTO.destinoId = transicion.destinoId
         transaccionDTO.tipo = transicion.tipo
         return transaccionDTO
@@ -195,7 +197,7 @@ class TransaccionService(
         transicion.monto = transaccionDTO.monto
         transicion.fecha = transaccionDTO.fecha
         transicion.detalle = transaccionDTO.detalle
-        transicion.origneId = transaccionDTO.origenId
+        transicion.origenId = transaccionDTO.origenId
         transicion.destinoId = transaccionDTO.destinoId
         transicion.tipo = transaccionDTO.tipo
         return transicion
